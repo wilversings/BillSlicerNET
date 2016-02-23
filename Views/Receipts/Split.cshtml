@@ -1,0 +1,74 @@
+﻿@model BillSlicer.Models.Split[]
+
+@{
+    ViewBag.Title = "Split receipt";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Split</h2>
+@Scripts.Render("~/bundles/receipt")
+
+<p>
+    @Html.ActionLink("Add existing product", "AddTo") |
+    @Html.ActionLink("Create new product", "../Products/Add")
+</p>
+
+@using (Html.BeginForm()) {
+
+    @Html.AntiForgeryToken();
+
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.First ().Product.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First ().Product.Price)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First ().Quantity)
+            </th>
+            @foreach (string roommateName in ViewBag.Payers) {
+                <th>
+                    @Html.DisplayTextFor(modelItem => roommateName)
+                </th>
+            }
+            <th></th>
+        </tr>
+        @for (int item = 0; item < Model.Count (); ++item) {
+            <tr>
+                <td>
+                    @Html.HiddenFor(modelItem => Model[item].Product_Id)
+                    @Html.DisplayFor(modelItem => Model[item].Product.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => Model[item].Product.Price)
+                </td>
+                <td>
+                    @Html.EditorFor(modelItem => Model[item].Quantity)
+                </td>
+                @for (int index = 0; index < ViewBag.Payers.Count; ++index) {
+                    <td>
+                        @Html.CheckBoxFor(x => x[item].SplitDecoded[index])
+                    </td>
+                }
+            </tr>
+        }
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            @foreach (var checkout in ViewBag.Checkout) {
+                <td>
+                    <h4>@checkout</h4>
+                </td>
+            }
+        </tr>
+
+    </table>
+    <div class="col-md-offset-2 col-md-10">
+        <input type="submit" value="Split" class="btn btn-default" />
+    </div>
+}
+
+

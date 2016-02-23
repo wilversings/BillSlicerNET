@@ -1,0 +1,54 @@
+﻿@model BillSlicer.Models.Product[]
+
+@{
+    ViewBag.Title = "Add to receipt";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>AddTo</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Add", "Products")
+</p>
+
+
+@using(Html.BeginForm()) {
+    @Html.AntiForgeryToken()
+
+    <table class="table">
+        <tr>
+            <th>Product name</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>Include</th>
+        </tr>
+        @for (var i = 0; i < Model.Count (); ++i) {
+        <tr>
+            @Html.HiddenFor(x => x[i].ID)
+            <td>
+                @Html.DisplayTextFor(x => x[i].Name)
+            </td>
+            <td>
+                @Html.DisplayTextFor(x => x[i].Price)
+            </td>
+            <td>
+                @Html.DisplayTextFor(x => x[i].Description)
+            </td>
+            <td>
+                @Html.CheckBoxFor(x => x[i].Checked)
+            </td>
+            
+            <td>
+                @*@@Html.ActionLink("Edit", "Edit", new { id = item.ID }) |
+                @Html.ActionLink("Details", "Details", new { id = item.ID }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ID })*@
+            </td>
+        </tr>
+        }
+    </table>
+    <div class="col-md-offset-2 col-md-10">
+        <input type="submit" value="Create" class="btn btn-default" />
+    </div>
+}
+
+   
