@@ -20,10 +20,6 @@ namespace BillSlicer {
                       "~/Scripts/bootstrap.js",
                       "~/Scripts/respond.js"));
 
-            bundles.Add (new ScriptBundle ("~/bundles/angularjs").Include (
-                    "~/Scripts/angular.js"
-                ));
-
             bundles.Add (new ScriptBundle ("~/bundles/receipt").Include (
                     "~/Scripts/Angular/receipt.js"
                 ));
