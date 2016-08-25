@@ -15,24 +15,23 @@
 @using(Html.BeginForm()) {
     @Html.AntiForgeryToken()
 
-    <table class="table">
+    <table class="table" id="product-table">
         <tr>
             <th>Product name</th>
             <th>Price</th>
             <th>Description</th>
-            <th>Include</th>
         </tr>
         @foreach (var receipt in Model) {
         <tr>
-            @Html.HiddenFor(x => receipt.ID)
+            @Html.Hidden(receipt.ID.ToString())
             <td>
-                @Html.DisplayTextFor(x => receipt.Name)
+                @Html.DisplayText(receipt.Name)
             </td>
             <td>
-                @Html.DisplayTextFor(x => receipt.Price)
+                @Html.DisplayText(receipt.Price.ToString())
             </td>
             <td>
-                @Html.DisplayTextFor(x => receipt.Description)
+                @Html.DisplayText(receipt.Description)
             </td>
             
             <td>
@@ -42,6 +41,18 @@
             </td>
         </tr>
         }
+        <tr id="new-row">
+            <td>
+                <input type="text" onchange=""/>
+            </td>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td>
+                <input class ="btn" value="save"/>
+            </td>
+        </tr>
     </table>
     <div class="col-md-offset-2 col-md-10">
         <input type="submit" value="Create" class="btn btn-default" />
