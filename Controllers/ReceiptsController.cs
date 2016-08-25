@@ -110,34 +110,9 @@ namespace BillSlicer.Controllers
         [Authorize]
         public ActionResult AddTo (int id) {
 
-            ApplicationUser currentUser = getCurrentUser ();
-            var roomID = currentUser.Room.ID;
+            var receipt = dbContext.Receipts.Where (r => r.ID == id).FirstOrDefault ();
 
-            var checkages = dbContext.Checkages.Where (x => x.Receipt_Id == id).ToList ();
-
-            var prods = new List<Product> ();
-
-            foreach (var prod in dbContext.Products) {
-                if (prod.Room.ID == roomID) {
-
-                    var chk = checkages.FirstOrDefault (x => x.Product_Id == prod.ID);
-
-                    if (chk == null) {
-                        prods.Add (prod);
-                    }
-                    else {
-                        prods.Add (new Product {
-                            Description = prod.Description,
-                            Checked = true,
-                            Name = prod.Name,
-                            Price = prod.Price,
-                            ID = prod.ID
-                        });
-                    }
-                }
-            }
-
-            return View ("AddTo", prods.ToArray ());
+            return View ("AddTo", receipt.Products);
 
         }
 

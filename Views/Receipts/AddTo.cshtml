@@ -1,4 +1,4 @@
-﻿@model BillSlicer.Models.Product[]
+﻿@model ICollection<BillSlicer.Models.Product>
 
 @{
     ViewBag.Title = "Add to receipt";
@@ -22,20 +22,17 @@
             <th>Description</th>
             <th>Include</th>
         </tr>
-        @for (var i = 0; i < Model.Count (); ++i) {
+        @foreach (var receipt in Model) {
         <tr>
-            @Html.HiddenFor(x => x[i].ID)
+            @Html.HiddenFor(x => receipt.ID)
             <td>
-                @Html.DisplayTextFor(x => x[i].Name)
+                @Html.DisplayTextFor(x => receipt.Name)
             </td>
             <td>
-                @Html.DisplayTextFor(x => x[i].Price)
+                @Html.DisplayTextFor(x => receipt.Price)
             </td>
             <td>
-                @Html.DisplayTextFor(x => x[i].Description)
-            </td>
-            <td>
-                @Html.CheckBoxFor(x => x[i].Checked)
+                @Html.DisplayTextFor(x => receipt.Description)
             </td>
             
             <td>
