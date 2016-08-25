@@ -5,11 +5,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Script.Serialization;
 
-namespace BillSlicer.Controllers
-{
-    public class ProductsController : Controller
-    {
+namespace BillSlicer.Controllers {
+    public class ProductsController : Controller {
 
         private ApplicationDbContext dbContext;
 
@@ -105,5 +104,26 @@ namespace BillSlicer.Controllers
             return RedirectToAction ("List");
             
         }
+
+       [Authorize]
+       public ActionResult Search (string SearchTerm) {
+
+            ApplicationUser currentUser = getCurrentUser ();
+
+            SearchTerm = SearchTerm.ToLower ();
+            var results = currentUser.Room.Products.Where (p => p.Name.ToLower ().Contains (SearchTerm))
+                .Select (p => new {
+                    id = p.ID,
+                    name = p.Name
+                });
+
+            var jsonData = new {
+                data = results
+            };
+
+            return Json (jsonData, JsonRequestBehavior.AllowGet);
+
+        }
+
     }
 }
