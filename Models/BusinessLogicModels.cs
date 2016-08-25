@@ -50,6 +50,8 @@ namespace BillSlicer.Models {
         // The roommate who added the receipt
         public virtual ApplicationUser Roommate { get; set; }
 
+        public virtual ICollection<Product> Products { get; set; }
+
     }
 
     public class Product {
@@ -82,6 +84,7 @@ namespace BillSlicer.Models {
         // The state of the Roommate-Buys-Product checkboxes 
         public virtual ICollection<Split> Checkages { get; set; }
 
+        public virtual ICollection<Receipt> Receipts { get; set; }
 
         /*
         * The following properties are not mapped since a product can be present
