@@ -150,7 +150,7 @@ namespace BillSlicer.Controllers
 
         }
 
-        private void setCheckOuts (IEnumerable<Split> splits) {
+        private decimal[] setCheckOuts (IEnumerable<Split> splits) {
 
             int payerNumber = getCurrentUser ().Room.Users.Count;
             var checkout = new decimal[payerNumber] ;
@@ -165,8 +165,8 @@ namespace BillSlicer.Controllers
                 decimal average = 0;
 
                 int checkedNumber = 0;
-                for (int jndex = 0; jndex < split.SplitDecoded.Count; ++jndex) {
-                    if (split.SplitDecoded[jndex]) {
+                foreach(char c in split.SplitString) {
+                    if (c == '1') {
                         ++checkedNumber;
                     }
                 }
@@ -174,15 +174,16 @@ namespace BillSlicer.Controllers
                     continue;
                 average = split.Product.Price * split.Quantity;
                 average /= checkedNumber;
-                for (int jndex = 0; jndex < split.SplitDecoded.Count; ++jndex) {
-                    if (split.SplitDecoded[jndex]) {
+                for (int jndex = 0; jndex < split.SplitString.Count(); ++jndex) {
+                    if (split.SplitString[jndex] == '1') {
                         checkout[jndex] += average;
                     }
                 }
 
                 ++index;
             }
-            ViewBag.Checkout = checkout;
+            
+            return checkout;
 
         }
 
@@ -209,7 +210,7 @@ namespace BillSlicer.Controllers
                 checkage.SplitDecoded = DecodeSplit (checkage.SplitString, roommates.Count);
             }
 
-            setCheckOuts (checkages);
+            ViewBag.Checkout = setCheckOuts (checkages);
 
             return View ("Split", checkages.ToArray());
 
@@ -251,7 +252,26 @@ namespace BillSlicer.Controllers
             split.SplitString = strSplit.ToString ();
             dbContext.SaveChanges ();
 
-            return new HttpStatusCodeResult (System.Net.HttpStatusCode.Accepted);
+            return Json (new {
+                data = setCheckOuts (dbContext.Checkages.Where (c => c.Receipt_Id == id))
+            }, JsonRequestBehavior.AllowGet);
+
+        }
+
+        [Authorize]
+        public ActionResult ChangeQuantity (int id, int subItemId, decimal quantity) {
+
+            var split = dbContext.Checkages
+                .Where (c => c.Receipt_Id == id && c.Product_Id == subItemId).FirstOrDefault ();
+
+            split.Quantity = quantity;
+            dbContext.SaveChanges ();
+
+            //setCheckOuts (dbContext.Checkages.Where(c => c.Receipt_Id == id));
+
+            return Json (new {
+                data = setCheckOuts (dbContext.Checkages.Where (c => c.Receipt_Id == id))
+            }, JsonRequestBehavior.AllowGet);
 
         }
 

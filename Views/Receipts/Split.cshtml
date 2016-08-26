@@ -85,9 +85,9 @@
                                 "<input type=\"hidden\" name=\"[" + rowNumber + "].Product_Id\" value=\"" + productConfig.data.id + "\">" +
                                 "<td>" + productConfig.data.name + "</td>" +
                                 "<td>" + productConfig.data.price + "</td>" +
-                                "<td><input class=\"text-box single-line\"" +
-                                (productConfig.data.description || '') +
-                                " name=\"[" + rowNumber + "].Quantity\" type=\"text\" value=\"1.00\" /></td>" +
+                                "<td><input " +
+                                "oninput=\"productActions.quantityChange(this)\" " +
+                                "type=\"text\" value=\"1.00\" /></td>" +
                                 (function () {
                                     var names = [];
                                     for (i = 0; i < receiptConfig.payerCount; ++i) {
@@ -136,15 +136,36 @@
                     index: roommateIndex
                 },
                 success: function (data, success, response) {
-
+                    $("#summary-row").children(".summary-cell").each(function (index, el) {
+                        $(el).text(data.data[index]);
+                    })
                 }
             })
         },
 
         quantityChange: function (el) {
+            var newVal = el.value;
+            var parsedVal = parseFloat(newVal);
+            if (isNaN(parsedVal)) {
+                return false;
+            }
+
+            var productId = $(el).parent().parent().children('input[type=hidden]')[0].value;
+            $.get({
+                url: '/Receipts/' + receiptConfig.id + '/ChangeQuantity/' + productId,
+                data: {
+                    quantity: parsedVal
+                },
+                success: function (data, success, response) {
+                    $("#summary-row").children(".summary-cell").each(function (index, el) {
+                        $(el).text(data.data[index]);
+                    })
+                }
+            })
         }
 
     }
+
 </script>
 @using (Html.BeginForm()) {
 
@@ -179,7 +200,7 @@
                     @Html.DisplayFor(modelItem => Model[item].Product.Price)
                 </td>
                 <td>
-                    @Html.EditorFor(modelItem => Model[item].Quantity)
+                    <input type="text" oninput="productActions.quantityChange(this)" value="@(Model[item].Quantity)"/>
                 </td>
                 @for (int index = 0; index < ViewBag.Payers.Count; ++index) {
                     <td>
@@ -217,14 +238,10 @@
             </td>
 
         </tr>
-        <tr>
-            @for (int i = 0; i < ViewBag.Payers.Count; ++i) {
-                <td></td>
-            }
+        <tr id="summary-row">
+            <td></td><td></td><td></td>
             @foreach (var checkout in ViewBag.Checkout) {
-                <td>
-                    <h4>@checkout</h4>
-                </td>
+                <td class="summary-cell">@checkout</td>
             }
         </tr>
 
