@@ -122,6 +122,8 @@ namespace BillSlicer.Controllers
 
             var receipt = dbContext.Receipts.Where (r => r.ID == id).FirstOrDefault ();
             receipt.Products.Remove (receipt.Products.Where (p => p.ID == subItemId).FirstOrDefault ());
+            var split = dbContext.Checkages.Where (c => c.Receipt_Id == id && c.Product_Id == subItemId).FirstOrDefault ();
+            dbContext.Checkages.Remove (split);
             dbContext.SaveChanges ();
 
             return new System.Web.Mvc.HttpStatusCodeResult (System.Net.HttpStatusCode.Accepted);
@@ -136,7 +138,12 @@ namespace BillSlicer.Controllers
             var receipt = dbContext.Receipts.Where (r => r.ID == id).FirstOrDefault ();
             var product = dbContext.Products.Where (p => p.ID == prodId).FirstOrDefault();
             receipt.Products.Add (product);
-
+            dbContext.Checkages.Add (new Models.Split {
+                Product_Id = prodId,
+                Receipt_Id = id,
+                Quantity = 1,
+                SplitString = "".PadLeft (receipt.Room.Users.Count, '0')
+            });
             dbContext.SaveChanges ();
 
             return new System.Web.Mvc.HttpStatusCodeResult (System.Net.HttpStatusCode.Created);
@@ -145,7 +152,7 @@ namespace BillSlicer.Controllers
 
         private void setCheckOuts (IEnumerable<Split> splits) {
 
-            int payerNumber = splits.FirstOrDefault ().SplitDecoded.Count;
+            int payerNumber = getCurrentUser ().Room.Users.Count;
             var checkout = new decimal[payerNumber] ;
 
             for (int jndex = 0; jndex < payerNumber; ++jndex) {
@@ -189,6 +196,7 @@ namespace BillSlicer.Controllers
 
             var roommates = currentUser.Room.Users;
 
+            ViewBag.ReceiptId = id;
             List<Split> splitCheckages = new List<Split> ();
 
             ViewBag.Payers = new List<string> ();
@@ -228,6 +236,22 @@ namespace BillSlicer.Controllers
             dbContext.SaveChanges ();
 
             return RedirectToAction ("Split", new { id = id });
+
+        }
+
+        [Authorize]
+        public ActionResult Check (int id, int subItemId, bool chk, int index) {
+
+            var split = dbContext.Checkages
+                .Where (c => c.Receipt_Id == id && c.Product_Id == subItemId).FirstOrDefault ();
+
+            var strSplit = new StringBuilder (split.SplitString);
+
+            strSplit[index] = chk ? '1' : '0';
+            split.SplitString = strSplit.ToString ();
+            dbContext.SaveChanges ();
+
+            return new HttpStatusCodeResult (System.Net.HttpStatusCode.Accepted);
 
         }
 

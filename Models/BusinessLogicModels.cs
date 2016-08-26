@@ -102,9 +102,8 @@ namespace BillSlicer.Models {
 
         public decimal Quantity { get; set; }
 
-        [Key, Column(Order = 0)]
+        public int ID { get; set; }
         public int Product_Id { get; set; }
-        [Key, Column (Order = 1)]
         public int Receipt_Id { get; set; }
         [ForeignKey("Product_Id")]
         public virtual Product Product { get; set; }

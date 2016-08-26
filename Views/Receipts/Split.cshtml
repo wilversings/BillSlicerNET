@@ -12,12 +12,145 @@
     @Html.ActionLink("Add existing product", "AddTo") |
     @Html.ActionLink("Create new product", "../Products/Add")
 </p>
+<script>
 
+    receiptConfig = {
+        id: '@ViewBag.ReceiptId',
+        payerCount: '@ViewBag.Payers.Count'
+    };
+
+    productConfig = {
+        selected: false,
+
+        autoCompleteConfig: {
+
+            source: '/Products/Search',
+            filter: function (item) {
+                return !productConfig.idMap.hasOwnProperty(item.id);
+            },
+
+            selector: '#new-row-name',
+            listeners: {
+
+                select: function (event, obj) {
+                    $.get({
+                        url: '/Products/Details/' + obj.item.id,
+                        success: function (data, success) {
+                            $('#new-row-price').text(data.data.price);
+                            $('#new-row-description').text(data.data.description || '');
+                            window.productConfig.selected = true;
+                            window.productConfig.data = data.data
+                        }
+                    })
+                },
+
+                search: function () {
+                    productConfig.idMap = {};
+                    $("#product-table input[type=hidden]").each(function (index, element) {
+                        productConfig.idMap[element.value] = true;
+                    })
+                }
+
+            }
+        }
+
+    };
+
+    productActions = {
+
+        nameInputChanged: function() {
+            BillSlicer.autocomplete(productConfig.autoCompleteConfig);
+        },
+
+        clear: function () {
+            productConfig.selected = false;
+            $('#new-row-price').text('');
+            $('#new-row-description').text('');
+            $('#new-row-name').val('');
+        },
+
+        save: function () {
+            if (productConfig.selected) {
+                $.post({
+                    url: '/Receipts/AddProduct/' + receiptConfig.id,
+                    data: {
+                        prodId: productConfig.data.id
+                    },
+                    success: function (data, success, response) {
+                        if (response.status == 201) {
+
+                            var rowNumber = $('#new-row').parent().children().length - 3;
+
+                            $('#new-row').before("<tr>" +
+                                "<input type=\"hidden\" name=\"[" + rowNumber + "].Product_Id\" value=\"" + productConfig.data.id + "\">" +
+                                "<td>" + productConfig.data.name + "</td>" +
+                                "<td>" + productConfig.data.price + "</td>" +
+                                "<td><input class=\"text-box single-line\"" +
+                                (productConfig.data.description || '') +
+                                " name=\"[" + rowNumber + "].Quantity\" type=\"text\" value=\"1.00\" /></td>" +
+                                (function () {
+                                    var names = [];
+                                    for (i = 0; i < receiptConfig.payerCount; ++i) {
+                                        names.push("<td>" +
+                                            "<input " +
+                                            "onchange=\"productActions.changeCheck(this)\"" +
+                                            "product-id=\"" + productConfig.data.id + "\"" +
+                                            "roommate-index=\"" + i + "\"" +
+                                            "type=\"checkbox\"/>" +
+                                        "</td>");
+                                    }
+                                    return names.join('');
+                                }).call(this) +
+                                "<td> <span class=\"spa-action\" onclick=\"productActions.remove(this)\">Delete</span></td>" +
+                            "</tr>");
+                            productActions.clear();
+                        }
+                    }
+                })
+            }
+        },
+
+        remove: function (el) {
+
+            var productId = $(el).parent().parent().children("input[type=hidden]")[0].value;
+            $.ajax({
+                method: 'DELETE',
+                url: '/Receipts/' + receiptConfig.id + '/DeleteProduct/' + productId,
+                success: function () {
+                    $(el).parent().parent().remove();
+                },
+                failure: function () {
+
+                }
+            })
+
+        },
+
+        changeCheck: function (el) {
+            var roommateIndex = el.getAttribute("roommate-index");
+            var productId = el.getAttribute("product-id");
+            $.get({
+                url: "/Receipts/" + receiptConfig.id + '/Check/' + productId,
+                data: {
+                    chk: el.checked,
+                    index: roommateIndex
+                },
+                success: function (data, success, response) {
+
+                }
+            })
+        },
+
+        quantityChange: function (el) {
+        }
+
+    }
+</script>
 @using (Html.BeginForm()) {
 
     @Html.AntiForgeryToken();
 
-    <table class="table">
+    <table class="table" id="product-table">
         <tr>
             <th>
                 @Html.DisplayNameFor(model => model.First ().Product.Name)
@@ -33,12 +166,13 @@
                     @Html.DisplayTextFor(modelItem => roommateName)
                 </th>
             }
-            <th></th>
+            <th>Actions</th>
         </tr>
+        
         @for (int item = 0; item < Model.Count (); ++item) {
             <tr>
+                @Html.HiddenFor(modelItem => Model[item].Product_Id)
                 <td>
-                    @Html.HiddenFor(modelItem => Model[item].Product_Id)
                     @Html.DisplayFor(modelItem => Model[item].Product.Name)
                 </td>
                 <td>
@@ -49,15 +183,44 @@
                 </td>
                 @for (int index = 0; index < ViewBag.Payers.Count; ++index) {
                     <td>
-                        @Html.CheckBoxFor(x => x[item].SplitDecoded[index])
+                        @if (Model[item].SplitDecoded[index]) {
+                            <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product_Id)" roommate-index="@(index)" checked/>
+                        } else {
+                            <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product_Id)" roommate-index="@(index)" />
+                        }
                     </td>
                 }
+                <td>
+                    <span class="spa-action" onclick="productActions.remove(this)">Delete</span>
+                </td>
             </tr>
         }
+        <tr id="new-row">
+            <td>
+                <div class="ui-widget">
+
+                    <input type="text" id="new-row-name"
+                           oninput="productActions.nameInputChanged()" />
+                </div>
+            </td>
+            <td id="new-row-price"></td>
+            <td id="new-row-description"></td>
+            @for (int i = 0; i < ViewBag.Payers.Count; ++i) {
+                <td></td>
+            }
+            <td>
+                <span class="spa-action" onclick="productActions.clear()">Clear</span> |
+
+                <span class="spa-action" onclick="productActions.save()">Save</span>
+
+                <!--<input class ="btn" value="save"/>-->
+            </td>
+
+        </tr>
         <tr>
-            <td></td>
-            <td></td>
-            <td></td>
+            @for (int i = 0; i < ViewBag.Payers.Count; ++i) {
+                <td></td>
+            }
             @foreach (var checkout in ViewBag.Checkout) {
                 <td>
                     <h4>@checkout</h4>
