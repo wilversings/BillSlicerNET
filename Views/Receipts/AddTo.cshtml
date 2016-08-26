@@ -12,11 +12,20 @@
 </p>
 <script>
 
+    receiptConfig = {
+        id: '@ViewBag.ReceiptId'
+    };
+
     productConfig = {
         selected: false,
 
         autoCompleteConfig: {
-            url: '/Products/Search',
+            
+            source: '/Products/Search',
+            filter: function (item) {
+                return !productConfig.idMap.hasOwnProperty(item.id);
+            },
+
             selector: '#new-row-name',
             listeners: {
 
@@ -27,8 +36,15 @@
                             $('#new-row-price').text(data.data.price);
                             $('#new-row-description').text(data.data.description || '');
                             window.productConfig.selected = true;
-                            window.productConfig.selectedProductId = data.data.id;
+                            window.productConfig.data = data.data
                         }
+                    })
+                },
+
+                search: function () {
+                    productConfig.idMap = {};
+                    $("#product-table input[type=hidden]").each(function (index, element) {
+                        productConfig.idMap[element.value] = true;
                     })
                 }
 
@@ -36,6 +52,7 @@
         }
 
     };
+
     productActions = {
 
         nameInputChanged: function() {
@@ -50,65 +67,96 @@
         },
 
         save: function () {
+            if (productConfig.selected) {
+                $.post({
+                    url: '/Receipts/AddProduct/' + receiptConfig.id,
+                    data: {
+                        prodId: productConfig.data.id
+                    },
+                    success: function (data, success, response) {
+                        if (response.status == 201) {
+                            $('#new-row').before("<tr>" +
+                                "<input type=\"hidden\"value=\"" + productConfig.data.id + "\">" +
+                                "<td>" + productConfig.data.name + "</td>" +
+                                "<td>" + productConfig.data.price + "</td>" +
+                                "<td>" + (productConfig.data.description || '') + "</td>" +
+                                "<td> <span class=\"spa-action\" onclick=\"productActions.remove(this)\">Delete</span></td>" +
+                            "</tr>");
+                            productActions.clear();
+                        }
+                    }
+                })
+            }
+        },
+
+        remove: function (el) {
+    
+            var productId = $(el).parent().parent().children("input[type=hidden]")[0].value;
+            $.ajax({
+                method: 'DELETE',
+                url: '/Receipts/' + receiptConfig.id + '/DeleteProduct/' + productId,
+                success: function () {
+                    $(el).parent().parent().remove();
+                },
+                failure: function () {
+                    
+                }
+            })
 
         }
 
     }
 </script>
 
-@using(Html.BeginForm()) {
-    @Html.AntiForgeryToken()
+<table class="table" id="product-table">
+    <tr>
+        <th>Product name</th>
+        <th>Price</th>
+        <th>Description</th>
+        <th>Actions</th>
+    </tr>
+    @foreach (var receipt in Model) {
+    <tr>
+        @Html.HiddenFor(x => receipt.ID)
+        <td>
+            @Html.DisplayTextFor(x => receipt.Name)
+        </td>
+        <td>
+            @Html.DisplayTextFor(x => receipt.Price)
+        </td>
+        <td>
+            @Html.DisplayTextFor(x => receipt.Description)
+        </td>
 
-    <table class="table" id="product-table">
-        <tr>
-            <th>Product name</th>
-            <th>Price</th>
-            <th>Description</th>
-        </tr>
-        @foreach (var receipt in Model) {
-        <tr>
-            @Html.Hidden(receipt.ID.ToString())
-            <td>
-                @Html.DisplayText(receipt.Name)
-            </td>
-            <td>
-                @Html.DisplayText(receipt.Price.ToString())
-            </td>
-            <td>
-                @Html.DisplayText(receipt.Description)
-            </td>
-            
-            <td>
-                @*@@Html.ActionLink("Edit", "Edit", new { id = item.ID }) |
-                @Html.ActionLink("Details", "Details", new { id = item.ID }) |
-                @Html.ActionLink("Delete", "Delete", new { id = item.ID })*@
-            </td>
-        </tr>
-        }
-        <tr id="new-row">
-            <td>
-                <div class="ui-widget">
+
+    <td>
+            <span class="spa-action" onclick="productActions.remove(this)">Delete</span>
+        </td>
+    </tr>
+    }
+    <tr id="new-row">
+        <td>
+            <div class="ui-widget">
                     
-                    <input type="text" id="new-row-name" 
-                           oninput="productActions.nameInputChanged()"/>
-                </div>
-            </td>
-            <td id="new-row-price">
-            </td>
-            <td id="new-row-description">
-            </td>
-            <td>
-                <span class="spa-action" onclick="productActions.clear()">Clear</span> |
+                <input type="text" id="new-row-name" 
+                        oninput="productActions.nameInputChanged()"/>
+            </div>
+        </td>
+        <td id="new-row-price">
+        </td>
+        <td id="new-row-description">
+        </td>
+        <td>
+            <span class="spa-action" onclick="productActions.clear()">Clear</span> |
 
-                <span class="spa-action" onclick="productActions.save()">Save</span>
+            <span class="spa-action" onclick="productActions.save()">Save</span>
 
-                <!--<input class ="btn" value="save"/>-->
-            </td>
+            <!--<input class ="btn" value="save"/>-->
+        </td>
             
-        </tr>
-    </table>
-    <div class="col-md-offset-2 col-md-10">
-    </div>
-}
+    </tr>
+</table>
+<div class="col-md-offset-2 col-md-10">
+</div>
 
    

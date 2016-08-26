@@ -15,6 +15,11 @@ namespace BillSlicer {
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Home", action = "Index", id = UrlParameter.Optional }
             );
+
+            routes.MapRoute (
+                name: "Delete",
+                url: "{controller}/{id}/{action}/{subItemId}"
+            );
         }
     }
 }

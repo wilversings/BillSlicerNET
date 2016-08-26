@@ -111,33 +111,36 @@ namespace BillSlicer.Controllers
         public ActionResult AddTo (int id) {
 
             var receipt = dbContext.Receipts.Where (r => r.ID == id).FirstOrDefault ();
-
+            ViewBag.ReceiptId = id;
             return View ("AddTo", receipt.Products);
+
+        }
+
+        [System.Web.Http.HttpDelete]
+        [Authorize]
+        public ActionResult DeleteProduct (int id, int subItemId) {
+
+            var receipt = dbContext.Receipts.Where (r => r.ID == id).FirstOrDefault ();
+            receipt.Products.Remove (receipt.Products.Where (p => p.ID == subItemId).FirstOrDefault ());
+            dbContext.SaveChanges ();
+
+            return new System.Web.Mvc.HttpStatusCodeResult (System.Net.HttpStatusCode.Accepted);
 
         }
 
         [HttpPost]
         [Authorize]
-        public ActionResult AddTo (int id, IList<Product> prods) {
+        public ActionResult AddProduct (int id) { 
 
-            dbContext.Checkages.RemoveRange (dbContext.Checkages.Where (x => x.Receipt_Id == id));
-            dbContext.Receipts.FirstOrDefault (x => x.ID == id).LastDateModified = DateTime.Now;
-
-            foreach (Product prod in prods) {
-
-                if (prod.Checked) {
-                    dbContext.Checkages.Add (new Split {
-                        Receipt_Id = id,
-                        Product_Id = prod.ID,
-                        Quantity = 1
-                    });
-                }
-
-            }
+            int prodId = Int32.Parse(Request.Form["prodId"]);
+            var receipt = dbContext.Receipts.Where (r => r.ID == id).FirstOrDefault ();
+            var product = dbContext.Products.Where (p => p.ID == prodId).FirstOrDefault();
+            receipt.Products.Add (product);
 
             dbContext.SaveChanges ();
 
-            return RedirectToAction ("List");
+            return new System.Web.Mvc.HttpStatusCodeResult (System.Net.HttpStatusCode.Created);
+
         }
 
         private void setCheckOuts (IEnumerable<Split> splits) {

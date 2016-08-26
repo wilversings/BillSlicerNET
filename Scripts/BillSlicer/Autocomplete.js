@@ -5,22 +5,33 @@
         if (!settings.hasOwnProperty('minLen'))
             settings.linLen = 3;
 
-        var acSettings = {
-            source: function (request, callback) {
+        var source;
+        if (typeof settings.source == 'string') {
+            source = function (request, callback) {
                 $.get({
-                    url: settings.url,
+                    url: settings.source,
                     data: {
                         SearchTerm: request.term
                     },
                     success: function (data) {
-                        callback(data.data);
+                        if (settings.hasOwnProperty('filter'))
+                            callback(data.data.filter(settings.filter));
+                        else
+                            callback(data.data);
                     },
                     error: function () {
                         callback([]);
                     },
 
                 })
-            },
+            }
+        }
+        else if (typeof settings.source == 'function') {
+            source = settings.source;
+        }
+
+        var acSettings = {
+            source: source,
             minLength: settings.minLen,
         }
 
