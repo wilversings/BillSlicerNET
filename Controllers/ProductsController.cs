@@ -114,7 +114,7 @@ namespace BillSlicer.Controllers {
             var results = currentUser.Room.Products.Where (p => p.Name.ToLower ().Contains (SearchTerm))
                 .Select (p => new {
                     id = p.ID,
-                    name = p.Name
+                    label = p.Name
                 });
 
             var jsonData = new {
@@ -122,6 +122,27 @@ namespace BillSlicer.Controllers {
             };
 
             return Json (jsonData, JsonRequestBehavior.AllowGet);
+
+        }
+
+        [Authorize]
+        public ActionResult Details (int id) {
+
+            ApplicationUser currentUser = getCurrentUser ();
+
+            var details = currentUser.Room.Products
+                .Where(p => p.ID == id)
+                .Select(p => new {
+                    id = p.ID,
+                    name = p.Name,
+                    price = p.Price,
+                    description = p.Description
+                })
+                .FirstOrDefault();
+
+            return Json (new {
+                data = details
+            }, JsonRequestBehavior.AllowGet);
 
         }
 

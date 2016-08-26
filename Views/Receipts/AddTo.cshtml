@@ -10,7 +10,51 @@
 <p>
     @Html.ActionLink("Create New", "Add", "Products")
 </p>
+<script>
 
+    productConfig = {
+        selected: false,
+
+        autoCompleteConfig: {
+            url: '/Products/Search',
+            selector: '#new-row-name',
+            listeners: {
+
+                select: function (event, obj) {
+                    $.get({
+                        url: '/Products/Details/' + obj.item.id,
+                        success: function (data, success) {
+                            $('#new-row-price').text(data.data.price);
+                            $('#new-row-description').text(data.data.description || '');
+                            window.productConfig.selected = true;
+                            window.productConfig.selectedProductId = data.data.id;
+                        }
+                    })
+                }
+
+            }
+        }
+
+    };
+    productActions = {
+
+        nameInputChanged: function() {
+            BillSlicer.autocomplete(productConfig.autoCompleteConfig);
+        },
+
+        clear: function () {
+            productConfig.selected = false;
+            $('#new-row-price').text('');
+            $('#new-row-description').text('');
+            $('#new-row-name').val('');
+        },
+
+        save: function () {
+
+        }
+
+    }
+</script>
 
 @using(Html.BeginForm()) {
     @Html.AntiForgeryToken()
@@ -43,19 +87,27 @@
         }
         <tr id="new-row">
             <td>
-                <input type="text" onchange=""/>
+                <div class="ui-widget">
+                    
+                    <input type="text" id="new-row-name" 
+                           oninput="productActions.nameInputChanged()"/>
+                </div>
+            </td>
+            <td id="new-row-price">
+            </td>
+            <td id="new-row-description">
             </td>
             <td>
+                <span class="spa-action" onclick="productActions.clear()">Clear</span> |
+
+                <span class="spa-action" onclick="productActions.save()">Save</span>
+
+                <!--<input class ="btn" value="save"/>-->
             </td>
-            <td>
-            </td>
-            <td>
-                <input class ="btn" value="save"/>
-            </td>
+            
         </tr>
     </table>
     <div class="col-md-offset-2 col-md-10">
-        <input type="submit" value="Create" class="btn btn-default" />
     </div>
 }
 

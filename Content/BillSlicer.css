@@ -1,0 +1,7 @@
+﻿.spa-action {
+    cursor:pointer;
+    color:blue;
+}
+.spa-action:hover {
+    text-decoration:underline;
+}
