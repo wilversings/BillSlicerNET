@@ -204,7 +204,7 @@
                 </td>
                 @for (int index = 0; index < ViewBag.Payers.Count; ++index) {
                     <td>
-                        @if (Model[item].SplitDecoded[index]) {
+                        @if (Model[item].SplitString[index] == '1') {
                             <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product.ID)" roommate-index="@(index)" checked/>
                         } else {
                             <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product.ID)" roommate-index="@(index)" />

@@ -108,14 +108,6 @@ namespace BillSlicer.Models {
 
         public string SplitString { get; set; }
 
-        /*
-        * The following properties are not mapped since they are
-        * just needed to pass some decoded information to the view and back
-        */
-
-        [NotMapped]
-        public IList<bool> SplitDecoded { get; set; }
-
     }
 
 

@@ -16,41 +16,6 @@ namespace BillSlicer.Controllers
             dbContext = new ApplicationDbContext ();
         }
 
-        private List<bool> DecodeSplit (string split, int roomMateNumber) {
-
-            var ans = new List<bool> ();
-
-            if (split == null)
-                split = "";
-
-            split = split.PadRight (roomMateNumber, '0');
-
-            foreach (char c in split) {
-                if (c == '1')
-                    ans.Add (true);
-                else
-                    ans.Add (false);
-            }
-
-            return ans;
-
-        }
-
-        private string SplitEncode (IList<bool> splitDecoded) {
-
-            var ans = new StringBuilder ();
-            foreach (bool check in splitDecoded) {
-                if (check) {
-                    ans.Append ('1');
-                } else {
-                    ans.Append ('0');
-                }
-            }
-
-            return ans.ToString ();
-
-        }
-
         private ApplicationUser getCurrentUser () {
 
             string currentUserID = User.Identity.GetUserId ();
@@ -204,10 +169,6 @@ namespace BillSlicer.Controllers
             foreach (ApplicationUser roommate in roommates) {
                 string firstName = roommate.FullName.Split (new char[] { ' ' }).First ();
                 ViewBag.Payers.Add (roommate.FullName);
-            }
-
-            foreach (var checkage in checkages) {
-                checkage.SplitDecoded = DecodeSplit (checkage.SplitString, roommates.Count);
             }
 
             ViewBag.Checkout = setCheckOuts (checkages);
