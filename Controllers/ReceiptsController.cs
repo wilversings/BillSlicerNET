@@ -9,8 +9,8 @@ using System.Web.Mvc;
 
 namespace BillSlicer.Controllers
 {
-    public class ReceiptsController : Controller
-    {
+    public class ReceiptsController : Controller {
+
         public ApplicationDbContext dbContext;
         public ReceiptsController () {
             dbContext = new ApplicationDbContext ();
@@ -122,7 +122,7 @@ namespace BillSlicer.Controllers
 
             var receipt = dbContext.Receipts.Where (r => r.ID == id).FirstOrDefault ();
             receipt.Products.Remove (receipt.Products.Where (p => p.ID == subItemId).FirstOrDefault ());
-            var split = dbContext.Checkages.Where (c => c.Receipt_Id == id && c.Product_Id == subItemId).FirstOrDefault ();
+            var split = dbContext.Checkages.Where (c => c.Receipt.ID == id && c.Product.ID == subItemId).FirstOrDefault ();
             dbContext.Checkages.Remove (split);
             dbContext.SaveChanges ();
 
@@ -139,8 +139,8 @@ namespace BillSlicer.Controllers
             var product = dbContext.Products.Where (p => p.ID == prodId).FirstOrDefault();
             receipt.Products.Add (product);
             dbContext.Checkages.Add (new Models.Split {
-                Product_Id = prodId,
-                Receipt_Id = id,
+                Product = product,
+                Receipt = receipt,
                 Quantity = 1,
                 SplitString = "".PadLeft (receipt.Room.Users.Count, '0')
             });
@@ -191,7 +191,7 @@ namespace BillSlicer.Controllers
         public ActionResult Split (int id) {
 
             var receipt = dbContext.Receipts.FirstOrDefault (x => x.ID == id);
-            var checkages = dbContext.Checkages.Where (x => x.Receipt_Id == id);
+            var checkages = dbContext.Checkages.Where (x => x.Receipt.ID == id);
 
             var currentUser = getCurrentUser ();
 
@@ -214,37 +214,13 @@ namespace BillSlicer.Controllers
 
             return View ("Split", checkages.ToArray());
 
-
-        }
-
-        [Authorize]
-        [HttpPost]
-        public ActionResult Split (int id, IEnumerable <Split> newCheckage) {
-
-            dbContext.Checkages.RemoveRange (dbContext.Checkages.Where (x => x.Receipt_Id == id));
-
-            foreach (var checkage in newCheckage) {
-
-                dbContext.Checkages.Add (new Split {
-                    Receipt_Id = id,
-                    Product_Id = checkage.Product_Id,
-                    Quantity = checkage.Quantity,
-                    SplitString = SplitEncode (checkage.SplitDecoded)
-                });
-            
-            }
-
-            dbContext.SaveChanges ();
-
-            return RedirectToAction ("Split", new { id = id });
-
         }
 
         [Authorize]
         public ActionResult Check (int id, int subItemId, bool chk, int index) {
 
             var split = dbContext.Checkages
-                .Where (c => c.Receipt_Id == id && c.Product_Id == subItemId).FirstOrDefault ();
+                .Where (c => c.Receipt.ID == id && c.Product.ID == subItemId).FirstOrDefault ();
 
             var strSplit = new StringBuilder (split.SplitString);
 
@@ -253,7 +229,7 @@ namespace BillSlicer.Controllers
             dbContext.SaveChanges ();
 
             return Json (new {
-                data = setCheckOuts (dbContext.Checkages.Where (c => c.Receipt_Id == id))
+                data = setCheckOuts (dbContext.Checkages.Where (c => c.Receipt.ID == id))
             }, JsonRequestBehavior.AllowGet);
 
         }
@@ -262,15 +238,15 @@ namespace BillSlicer.Controllers
         public ActionResult ChangeQuantity (int id, int subItemId, decimal quantity) {
 
             var split = dbContext.Checkages
-                .Where (c => c.Receipt_Id == id && c.Product_Id == subItemId).FirstOrDefault ();
+                .Where (c => c.Receipt.ID == id && c.Product.ID == subItemId).FirstOrDefault ();
 
             split.Quantity = quantity;
             dbContext.SaveChanges ();
 
-            //setCheckOuts (dbContext.Checkages.Where(c => c.Receipt_Id == id));
+            //setCheckOuts (dbContext.Checkages.Where(c => c.Receipt.ID == id));
 
             return Json (new {
-                data = setCheckOuts (dbContext.Checkages.Where (c => c.Receipt_Id == id))
+                data = setCheckOuts (dbContext.Checkages.Where (c => c.Receipt.ID == id))
             }, JsonRequestBehavior.AllowGet);
 
         }

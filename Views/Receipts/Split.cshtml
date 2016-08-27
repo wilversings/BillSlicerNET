@@ -82,7 +82,7 @@
                             var rowNumber = $('#new-row').parent().children().length - 3;
 
                             $('#new-row').before("<tr>" +
-                                "<input type=\"hidden\" name=\"[" + rowNumber + "].Product_Id\" value=\"" + productConfig.data.id + "\">" +
+                                "<input type=\"hidden\" value=\"" + productConfig.data.id + "\">" +
                                 "<td>" + productConfig.data.name + "</td>" +
                                 "<td>" + productConfig.data.price + "</td>" +
                                 "<td><input " +
@@ -192,7 +192,7 @@
         
         @for (int item = 0; item < Model.Count (); ++item) {
             <tr>
-                @Html.HiddenFor(modelItem => Model[item].Product_Id)
+                @Html.HiddenFor(modelItem => Model[item].Product.ID)
                 <td>
                     @Html.DisplayFor(modelItem => Model[item].Product.Name)
                 </td>
@@ -205,9 +205,9 @@
                 @for (int index = 0; index < ViewBag.Payers.Count; ++index) {
                     <td>
                         @if (Model[item].SplitDecoded[index]) {
-                            <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product_Id)" roommate-index="@(index)" checked/>
+                            <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product.ID)" roommate-index="@(index)" checked/>
                         } else {
-                            <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product_Id)" roommate-index="@(index)" />
+                            <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product.ID)" roommate-index="@(index)" />
                         }
                     </td>
                 }

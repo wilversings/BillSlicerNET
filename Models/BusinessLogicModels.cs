@@ -103,11 +103,7 @@ namespace BillSlicer.Models {
         public decimal Quantity { get; set; }
 
         public int ID { get; set; }
-        public int Product_Id { get; set; }
-        public int Receipt_Id { get; set; }
-        [ForeignKey("Product_Id")]
         public virtual Product Product { get; set; }
-        [ForeignKey("Receipt_Id")]
         public virtual Receipt Receipt { get; set; }
 
         public string SplitString { get; set; }
