@@ -65,6 +65,8 @@ namespace BillSlicer.Models {
         [Required]
         public string Name { get; set; }
 
+        public virtual ICollection<ProductAttachment> Attachment { get; set; }
+
         // The price
         [Required]
         [DataType (DataType.Currency)]

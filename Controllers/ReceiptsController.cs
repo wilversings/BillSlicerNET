@@ -29,8 +29,7 @@ namespace BillSlicer.Controllers
         }
 
         [Authorize]
-        public ActionResult List()
-        {
+        public ActionResult List() {
             ApplicationUser currentUser = getCurrentUser ();
 
             if (currentUser.Room.Receipts.Count == 0) {
@@ -203,8 +202,6 @@ namespace BillSlicer.Controllers
 
             split.Quantity = quantity;
             dbContext.SaveChanges ();
-
-            //setCheckOuts (dbContext.Checkages.Where(c => c.Receipt.ID == id));
 
             return Json (new {
                 data = setCheckOuts (dbContext.Checkages.Where (c => c.Receipt.ID == id))
