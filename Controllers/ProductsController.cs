@@ -63,7 +63,7 @@ namespace BillSlicer.Controllers {
         }
 
         [HttpPost]
-        public ActionResult Edit (Product modifiedProduct) {
+        public ActionResult Edit (Product modifiedProduct, ICollection<HttpPostedFileBase> files) {
 
             Product dbProduct = dbContext.Products.First (x => x.ID == modifiedProduct.ID);
 
@@ -73,6 +73,16 @@ namespace BillSlicer.Controllers {
                 oldProduct.Name = modifiedProduct.Name;
                 oldProduct.Price = modifiedProduct.Price;
                 oldProduct.Description = modifiedProduct.Description;
+
+                var attachments = files.Where (f => f != null).Select (file => {
+                    var buffer = new byte[file.ContentLength];
+                    file.InputStream.Read (buffer, 0, file.ContentLength);
+                    return new ProductAttachment {
+                        Attachment = buffer
+                    };
+                }).ToList();
+
+                oldProduct.Attachment = attachments;
 
                 dbContext.SaveChanges ();
 
@@ -91,7 +101,7 @@ namespace BillSlicer.Controllers {
 
         [Authorize]
         [HttpPost]
-        public ActionResult Create (Product newProduct) {
+        public ActionResult Create (Product newProduct, ICollection<HttpPostedFileBase> files) {
 
             ApplicationUser currentUser = getCurrentUser ();
 
