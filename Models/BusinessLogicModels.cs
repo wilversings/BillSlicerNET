@@ -86,15 +86,6 @@ namespace BillSlicer.Models {
 
         public virtual ICollection<Receipt> Receipts { get; set; }
 
-        /*
-        * The following properties are not mapped since a product can be present
-        * in multiple receipts
-        */
-
-        // If this product was added in a particular receipt
-        [NotMapped]
-        public bool Checked { get; set; }
-
 
     }
 

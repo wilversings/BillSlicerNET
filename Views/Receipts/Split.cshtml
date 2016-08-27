@@ -167,88 +167,84 @@
     }
 
 </script>
-@using (Html.BeginForm()) {
-
-    @Html.AntiForgeryToken();
-
-    <table class="table" id="product-table">
-        <tr>
+<table class="table" id="product-table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.First ().Product.Name)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First ().Product.Price)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.First ().Quantity)
+        </th>
+        @foreach (string roommateName in ViewBag.Payers) {
             <th>
-                @Html.DisplayNameFor(model => model.First ().Product.Name)
+                @Html.DisplayTextFor(modelItem => roommateName)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.First ().Product.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.First ().Quantity)
-            </th>
-            @foreach (string roommateName in ViewBag.Payers) {
-                <th>
-                    @Html.DisplayTextFor(modelItem => roommateName)
-                </th>
-            }
-            <th>Actions</th>
-        </tr>
-        
-        @for (int item = 0; item < Model.Count (); ++item) {
-            <tr>
-                @Html.HiddenFor(modelItem => Model[item].Product.ID)
-                <td>
-                    @Html.DisplayFor(modelItem => Model[item].Product.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => Model[item].Product.Price)
-                </td>
-                <td>
-                    <input type="text" oninput="productActions.quantityChange(this)" value="@(Model[item].Quantity)"/>
-                </td>
-                @for (int index = 0; index < ViewBag.Payers.Count; ++index) {
-                    <td>
-                        @if (Model[item].SplitString[index] == '1') {
-                            <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product.ID)" roommate-index="@(index)" checked/>
-                        } else {
-                            <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product.ID)" roommate-index="@(index)" />
-                        }
-                    </td>
-                }
-                <td>
-                    <span class="spa-action" onclick="productActions.remove(this)">Delete</span>
-                </td>
-            </tr>
         }
-        <tr id="new-row">
+        <th>Actions</th>
+    </tr>
+        
+    @for (int item = 0; item < Model.Count (); ++item) {
+        <tr>
+            @Html.HiddenFor(modelItem => Model[item].Product.ID)
             <td>
-                <div class="ui-widget">
-
-                    <input type="text" id="new-row-name"
-                           oninput="productActions.nameInputChanged()" />
-                </div>
+                @Html.DisplayFor(modelItem => Model[item].Product.Name)
             </td>
-            <td id="new-row-price"></td>
-            <td id="new-row-description"></td>
-            @for (int i = 0; i < ViewBag.Payers.Count; ++i) {
-                <td></td>
+            <td>
+                @Html.DisplayFor(modelItem => Model[item].Product.Price)
+            </td>
+            <td>
+                <input type="text" oninput="productActions.quantityChange(this)" value="@(Model[item].Quantity)"/>
+            </td>
+            @for (int index = 0; index < ViewBag.Payers.Count; ++index) {
+                <td>
+                    @if (Model[item].SplitString[index] == '1') {
+                        <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product.ID)" roommate-index="@(index)" checked/>
+                    } else {
+                        <input onchange="productActions.changeCheck(this)" type="checkbox" product-id="@(Model[item].Product.ID)" roommate-index="@(index)" />
+                    }
+                </td>
             }
             <td>
-                <span class="spa-action" onclick="productActions.clear()">Clear</span> |
-
-                <span class="spa-action" onclick="productActions.save()">Save</span>
-
-                <!--<input class ="btn" value="save"/>-->
+                <span class="spa-action" onclick="productActions.remove(this)">Delete</span>
             </td>
-
         </tr>
-        <tr id="summary-row">
-            <td></td><td></td><td></td>
-            @foreach (var checkout in ViewBag.Checkout) {
-                <td class="summary-cell">@checkout</td>
-            }
-        </tr>
+    }
+    <tr id="new-row">
+        <td>
+            <div class="ui-widget">
 
-    </table>
-    <div class="col-md-offset-2 col-md-10">
-        <input type="submit" value="Split" class="btn btn-default" />
-    </div>
-}
+                <input type="text" id="new-row-name"
+                        oninput="productActions.nameInputChanged()" />
+            </div>
+        </td>
+        <td id="new-row-price"></td>
+        <td id="new-row-description"></td>
+        @for (int i = 0; i < ViewBag.Payers.Count; ++i) {
+            <td></td>
+        }
+        <td>
+            <span class="spa-action" onclick="productActions.clear()">Clear</span> |
+
+            <span class="spa-action" onclick="productActions.save()">Save</span>
+
+            <!--<input class ="btn" value="save"/>-->
+        </td>
+
+    </tr>
+    <tr id="summary-row">
+        <td></td><td></td><td></td>
+        @foreach (var checkout in ViewBag.Checkout) {
+            <td class="summary-cell">@checkout</td>
+        }
+    </tr>
+
+</table>
+<div class="col-md-offset-2 col-md-10">
+    <input type="submit" value="Split" class="btn btn-default" />
+</div>
+
 
 
