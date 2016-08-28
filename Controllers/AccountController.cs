@@ -172,16 +172,28 @@ namespace BillSlicer.Controllers
         {
             if (ModelState.IsValid)
             {
+                int roomId = int.Parse (model.SelectedRoom);
                 var user = new ApplicationUser {
                     UserName = model.Email,
                     Email = model.Email,
                     FullName = model.FullName,
                     PhoneNumber = model.PhoneNumber,
-                    Room_ID = int.Parse (model.SelectedRoom)
+                    Room_ID = roomId
                 };
+
                 var result = await UserManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+
+                    var dbContext = new ApplicationDbContext ();
+                    var room = dbContext.Rooms.Where (r => r.ID == roomId).FirstOrDefault ();
+                    foreach (var receipt in room.Receipts) {
+                        foreach (var split in dbContext.Checkages.Where (s => s.Receipt.ID == receipt.ID)) {
+                            split.SplitString = split.SplitString.PadRight (split.SplitString.Length + 1, '0');
+                        }
+                    }
+                    dbContext.SaveChanges ();
+
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
                     // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=320771
